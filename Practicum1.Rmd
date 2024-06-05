@@ -1,0 +1,110 @@
+---
+title: "Practicum1"
+author: "Thomas Faria"
+date: "2024-06-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load required packages for Practicum1
+library(tidyverse)
+
+```
+
+## Part 1: Questions
+
+### Question 1
+
+```{r, q1}
+
+```
+
+### Question 2
+
+```{r, q2}
+
+```
+
+### Question 3
+
+```{r, q3}
+
+```
+
+### Question 4
+
+```{r, q4}
+
+```
+
+## Part 2: Practicum Tasks
+
+#### Load data from provided URL
+
+```{r, load_data}
+
+```
+
+#### Initial evaluation of dataset
+
+-   Determine necessary preparation steps and perform them
+
+-   Discuss distribution, outliers, and prepare summary stats
+
+```{r, prep_data}
+
+```
+
+#### Restructure data into appropriate tibbles
+
+```{r, county}
+# Caitlin
+```
+
+```{r, program_category}
+# Sairah
+```
+
+```{r, primary_substance_group}
+# Sairah
+```
+
+```{r, admissions_data}
+# Thomas
+```
+
+#### Define annualAdmissions()
+
+-   Function should derive the total \# of reported admissions per year for the entire state of NY and display these results on a line graph
+
+-   Annotate to show year with highest admissions
+
+-   Explain results
+
+```{r, define_function}
+
+```
+
+#### Analyze % of admissions by county
+
+-   Visualize top 5 counties using a bar chart
+
+-   Explain results
+
+```{r, admissions_by_county}
+
+```
+
+#### Extract various "Rehab" facilities information
+
+-   Use a regex to match all facilities that include the word rehab, rehabilitation, etc.
+
+-   Using filtered data, identify the most prominent (common) substance related to admission for each age group
+
+-   Visualize and explain results
+
+```{r, rehab_regex}
+
+```
