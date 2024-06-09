@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Load required packages for Practicum1
 library(tidyverse)
+library(devtools)
 
 ```
 
@@ -44,6 +45,20 @@ library(tidyverse)
 #### Load data from provided URL
 
 ```{r, load_data}
+
+# Documentation from data.world recommends package installation directly from Github
+devtools::install_github("datadotworld/data.world-r", build_vignettes = TRUE)
+
+# Load the requisite API token obtained from data.world advanced settings (Thomas's account)
+token <- readLines('~/RStudioProjects/Summer24_DA5020_Group7_Practicum1/API_token')
+saved_cfg <- data.world::save_config(token)
+data.world::set_config(saved_cfg)
+
+# From data.world R and RStudio integration:
+library("data.world")
+sql_stmt <- data.world::qry_sql("SELECT * FROM chemical_dependence_treatment_program_admissions_beginning_2007_1")
+query_results_df <- data.world::query(
+  sql_stmt, "https://data.world/data-ny-gov/ngbt-9rwf")
 
 ```
 
