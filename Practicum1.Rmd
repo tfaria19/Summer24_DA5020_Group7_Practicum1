@@ -70,6 +70,39 @@ query_results_df <- data.world::query(
 
 ```{r, prep_data}
 
+# Evaluate data distribution, outliers, and prepare summary stats
+
+# Reassign query results to more descriptive variable
+admissions_data <- query_results_df
+
+# Overview data
+glimpse(admissions_data)
+summary(admissions_data)
+
+# Visualize outliers in the admissions column
+ggplot(admissions_data) +
+  labs(title = "Admissions Data Distribution") +
+  geom_histogram(mapping = aes(x = admissions), bindwidth = 5)
+
+# Zoom in on low occuring values
+ggplot(admissions_data) +
+  labs(title = "Admissions Data Distribution (< 8 occurences)") +
+  geom_histogram(mapping = aes(x = admissions), binwidth = 5) +
+  coord_cartesian(ylim = c(0,8))
+
+# Designate all columns except for year, admissions, and county as categorical (using as.factor())
+admission_data_factors <- admissions_data %>% 
+  mutate(
+    program_category = as.factor(program_category),
+    service_type = as.factor(service_type),
+    age_group = as.factor(age_group),
+    primary_substance_group = as.factor(primary_substance_group)
+  )
+
+# program_category_summary <- tapply(admission_data_factors$admissions,
+#                                   admission_data_factors$program_category,
+#                                   summary)
+
 ```
 
 #### Restructure data into appropriate tibbles
