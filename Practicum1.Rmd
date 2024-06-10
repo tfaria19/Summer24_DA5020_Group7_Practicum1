@@ -152,8 +152,41 @@ primary_substance_group_summary <- admissions_data_factors %>%
 
 #### Restructure data into appropriate tibbles
 
-```{r, county}
-# Caitlin
+```{r county}
+# Temporary DF, query setup not working yet (for Caitlin)
+temp_chem_df <- read.csv("chemical-dependence-treatment-program-admissions-for-55-and-older-beginning-2007-1.csv")
+# Read in .csv created from https://www.dot.ny.gov/main/business-center/engineering/specifications/local-specifications/county-code as reference
+county_codes <- read_csv("county_codes.csv") %>%
+  rename(`County.of.Residence` = `County of Residence`)
+county_codes
+```
+
+```{r county}
+# Code if we want to keep abbreviations
+county1 <- temp_chem_df %>%
+  select(County.of.Residence) %>%
+  distinct() %>%
+  left_join(county_codes, by = "County.of.Residence") %>%
+  mutate(`County Code` = case_when(
+      # Tagging counties with first two characters and "-NYC"
+      County.of.Residence %in% c("Bronx", "Queens", "Kings") ~ str_trim(paste(str_to_upper(str_sub(County.of.Residence, 1, 2)), "-NYC")),
+      County.of.Residence == "New York" ~ "NYC",
+      # Handle to not treat as NA value, changed code to NS instead
+      County.of.Residence == "Nassau" ~ "NS",
+      # Handle to not treat as NA value, manually assigned SL 
+      County.of.Residence == "St Lawrence" ~ "SL",
+      TRUE ~ `County Code` 
+    )
+  )
+county1
+
+# Code that assigns a unique numerical ID to counties
+county2 <- temp_chem_df %>%
+  select(County.of.Residence) %>%
+  distinct() %>%
+  left_join(county_codes, by = "County.of.Residence") %>%
+  mutate(`County Code` = row_number())
+county2
 ```
 
 ```{r, program_category}
