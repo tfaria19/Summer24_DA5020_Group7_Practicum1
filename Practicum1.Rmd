@@ -91,7 +91,7 @@ ggplot(admissions_data) +
   coord_cartesian(ylim = c(0,8))
 
 # Designate all columns except for year, admissions, and county as categorical (using as.factor())
-admission_data_factors <- admissions_data %>% 
+admissions_data_factors <- admissions_data %>% 
   mutate(
     program_category = as.factor(program_category),
     service_type = as.factor(service_type),
@@ -99,9 +99,39 @@ admission_data_factors <- admissions_data %>%
     primary_substance_group = as.factor(primary_substance_group)
   )
 
-# program_category_summary <- tapply(admission_data_factors$admissions,
-#                                   admission_data_factors$program_category,
-#                                   summary)
+# Compute summaries per factor
+program_category_summary <- admissions_data_factors %>% 
+  group_by(program_category) %>%
+  summarize(
+    min_admissions = min(admissions),
+    median_admissions = median(admissions),
+    mean_admissions = mean(admissions),
+    max_admissions = max(admissions)
+  )
+service_type_summary <- admissions_data_factors %>% 
+  group_by(service_type) %>%
+  summarize(
+    min_admissions = min(admissions),
+    median_admissions = median(admissions),
+    mean_admissions = mean(admissions),
+    max_admissions = max(admissions)
+  )
+age_group_summary <- admissions_data_factors %>% 
+  group_by(age_group) %>%
+  summarize(
+    min_admissions = min(admissions),
+    median_admissions = median(admissions),
+    mean_admissions = mean(admissions),
+    max_admissions = max(admissions)
+  )
+primary_substance_group_summary <- admissions_data_factors %>% 
+  group_by(primary_substance_group) %>%
+  summarize(
+    min_admissions = min(admissions),
+    median_admissions = median(admissions),
+    mean_admissions = mean(admissions),
+    max_admissions = max(admissions)
+  )
 
 ```
 
