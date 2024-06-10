@@ -25,7 +25,9 @@ library(devtools)
 ### Question 2
 
 ```{r, q2}
-
+doc_df[1, 2]
+doc_df[2:4, ]
+doc_df[, 4]
 ```
 
 ### Question 3
@@ -36,9 +38,22 @@ library(devtools)
 
 ### Question 4
 
-```{r, q4}
+```{r}
+summary(mtcars)
 
+mpg_weight_cor <- mtcars %>%
+select(wt, mpg) %>%
+drop_na() %>%
+summarize(correlation = cor(wt, mpg))
+mpg_weight_cor
 ```
+
+* It is known that the weight of a vehicle plays a key role in how fuel efficient it is, so both wt and mpg were selected to identify a potential correlation
+* The Pearson coefficient is a descriptive statistic that reveals the linear correlation between two variables
+* A value between 0 and 1 shows how strong the correlation is, with 1 indicating a strong correlation and 0 an absence of correlation
+* The sign of the value indicates the type of correlation (positive or negative)
+
+---
 
 ## Part 2: Practicum Tasks
 
@@ -68,7 +83,7 @@ query_results_df <- data.world::query(
 
 -   Discuss distribution, outliers, and prepare summary stats
 
-```{r, prep_data}
+```{r, q4}
 
 # Evaluate data distribution, outliers, and prepare summary stats
 
