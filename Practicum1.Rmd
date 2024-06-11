@@ -11,7 +11,6 @@ knitr::opts_chunk$set(echo = TRUE)
 # Load required packages for Practicum1
 library(tidyverse)
 library(devtools)
-
 ```
 
 ## Part 1: Questions
@@ -19,7 +18,13 @@ library(devtools)
 ### Question 1
 
 ```{r, q1}
-
+doc_df <- data.frame(
+  doctor_type = c("PCP", "Psychiatrist", "Surgeon", "Anesthesia"),
+  doctor_lastname = c("Smith", "Dame", "Jones", "Zayas"),
+  location = c("MA", "ME", "NH", "VT"),
+  AVG_Rating = c("7", "9", "8", "9")
+)
+print(doc_df)
 ```
 
 ### Question 2
@@ -39,6 +44,7 @@ doc_df[, 4]
 ### Question 4
 
 ```{r}
+# Examine variable summary stats
 summary(mtcars)
 
 mpg_weight_cor <- mtcars %>%
@@ -52,6 +58,8 @@ mpg_weight_cor
 * The Pearson coefficient is a descriptive statistic that reveals the linear correlation between two variables
 * A value between 0 and 1 shows how strong the correlation is, with 1 indicating a strong correlation and 0 an absence of correlation
 * The sign of the value indicates the type of correlation (positive or negative)
+* In this case, the coefficient value returned is approximately -0.87, which indicates a strong, negative correlation
+  * As vehicle weight increases, fuel efficiency (mpg) decreases
 
 ---
 
@@ -65,7 +73,9 @@ mpg_weight_cor
 devtools::install_github("datadotworld/data.world-r", build_vignettes = TRUE)
 
 # Load the requisite API token obtained from data.world advanced settings (Thomas's account)
-token <- readLines('~/RStudioProjects/Summer24_DA5020_Group7_Practicum1/API_token')
+# Original code: token <- readLines('~/RStudioProjects/Summer24_DA5020_Group7_Practicum1/API_token')
+# Changed
+token <- readLines('API_token')
 saved_cfg <- data.world::save_config(token)
 data.world::set_config(saved_cfg)
 
@@ -122,7 +132,8 @@ program_category_summary <- admissions_data_factors %>%
     median_admissions = median(admissions),
     mean_admissions = mean(admissions),
     max_admissions = max(admissions)
-  )
+  ) 
+
 service_type_summary <- admissions_data_factors %>% 
   group_by(service_type) %>%
   summarize(
@@ -147,47 +158,49 @@ primary_substance_group_summary <- admissions_data_factors %>%
     mean_admissions = mean(admissions),
     max_admissions = max(admissions)
   )
+```
 
+```{r}
+# Compute outliers for numerical variables
+admissions_outliers <- admissions_data_factors %>%
+  mutate(
+    mean_admissions = mean(admissions, na.rm = TRUE),
+    sd_admissions = sd(admissions, na.rm = TRUE)
+  ) %>%
+  filter(admissions < mean_admissions - 3 * sd_admissions | admissions > mean_admissions + 3 * sd_admissions) %>%
+  select(admissions)
+admissions_outliers
 ```
 
 #### Restructure data into appropriate tibbles
 
 ```{r county}
-# Temporary DF, query setup not working yet (for Caitlin)
-temp_chem_df <- read.csv("chemical-dependence-treatment-program-admissions-for-55-and-older-beginning-2007-1.csv")
 # Read in .csv created from https://www.dot.ny.gov/main/business-center/engineering/specifications/local-specifications/county-code as reference
-county_codes <- read_csv("county_codes.csv") %>%
-  rename(`County.of.Residence` = `County of Residence`)
+county_codes <- read_csv("county_codes.csv") 
 county_codes
 ```
 
-```{r county}
-# Code if we want to keep abbreviations
-county1 <- temp_chem_df %>%
-  select(County.of.Residence) %>%
+```{r county1}
+county <- admissions_data_factors %>%
+  select(county_of_program_location) %>%
   distinct() %>%
-  left_join(county_codes, by = "County.of.Residence") %>%
-  mutate(`County Code` = case_when(
+  # Join codes with respective counties from county_codes
+  left_join(county_codes, by = "county_of_program_location") %>%
+  mutate(county_code = case_when(
       # Tagging counties with first two characters and "-NYC"
-      County.of.Residence %in% c("Bronx", "Queens", "Kings") ~ str_trim(paste(str_to_upper(str_sub(County.of.Residence, 1, 2)), "-NYC")),
-      County.of.Residence == "New York" ~ "NYC",
+      county_of_program_location %in% c("Bronx", "Queens", "Kings") ~ paste(str_to_upper(str_sub(county_of_program_location, 1, 2)), "-NYC", sep = ""),
+      county_of_program_location == "New York" ~ "NYC",
       # Handle to not treat as NA value, changed code to NS instead
-      County.of.Residence == "Nassau" ~ "NS",
+      county_of_program_location == "Nassau" ~ "NS",
       # Handle to not treat as NA value, manually assigned SL 
-      County.of.Residence == "St Lawrence" ~ "SL",
-      TRUE ~ `County Code` 
+      county_of_program_location == "St Lawrence" ~ "SL",
+      TRUE ~ county_code 
     )
   )
-county1
-
-# Code that assigns a unique numerical ID to counties
-county2 <- temp_chem_df %>%
-  select(County.of.Residence) %>%
-  distinct() %>%
-  left_join(county_codes, by = "County.of.Residence") %>%
-  mutate(`County Code` = row_number())
-county2
+county
 ```
+
+
 
 ```{r, program_category}
 # Sairah
