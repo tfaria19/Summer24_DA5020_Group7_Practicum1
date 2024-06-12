@@ -290,7 +290,44 @@ admissions_data_df <- admissions_data_coded_joined %>%
 -   Explain results
 
 ```{r, define_function}
-# Thomas 
+# Thomas -- NEEDS WORK
+
+# This function uses aggregate() to sum the total admissions for every year in the admissions_data_df
+# The max point is computed from the aggregated tibble and held for later reference on the graph
+# A line graph is prepared using ggplot2 with appropriate labeling
+
+annualAdmissions <- function() {
+  # Get aggregated data as its own tibble for easy ref
+  total_admissions <- aggregate(admissions_data_df$admissions, 
+            by = list(year = admissions_data_df$year), 
+            sum) %>% 
+    rename(total = x)
+  
+  # Get maximum
+  max_point <- total_admissions[which.max(total_admissions$total), ]
+  
+  # Plot a line graph
+  total_admissions %>% 
+    ggplot(mapping = aes(x = year, y = total)) + 
+    geom_line() +
+    geom_point() +
+    scale_x_continuous(breaks = 2007:2017) +
+    labs(title = "Total admissions per year, all of New York State",
+         x = "Total admissions",
+         y = "Year") + 
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+      axis.title.x = element_text(size = 14),
+      axis.title.y = element_text(size = 14)
+    ) + 
+    annotate("text",
+             x = max_point$year,
+             y = max_point$total,
+             label = paste("Max. admissions:", max_point$total),
+             vjust = -1)
+}
+
+annualAdmissions()
 
 ```
 
