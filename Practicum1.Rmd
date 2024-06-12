@@ -263,6 +263,22 @@ primary_substance_group_df
 ````{r, admissions_data}
 # Thomas
 
+# Join county_code data onto main tibble using a full_join by county name
+admissions_data_coded_joined <- admissions_data_coded %>% 
+  full_join(county, by = "county_of_program_location")
+
+# Final tibble: admissions_data_df
+admissions_data_df <- admissions_data_coded_joined %>% 
+  select(
+    year,
+    county_code,
+    program_code,
+    service_type,
+    age_group,
+    substance_code,
+    admissions
+  )
+
 ```
 
 #### Define annualAdmissions()
