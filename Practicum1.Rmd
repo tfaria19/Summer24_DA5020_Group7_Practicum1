@@ -200,18 +200,69 @@ county <- admissions_data_factors %>%
 county
 ```
 
-
-
 ```{r, program_category}
-# Sairah
+
+# Define abbreviations for recoding
+program_category_index <- c(
+  "Crisis" = "C",
+  "Inpatient" = "I",
+  "Opioid Treatment Program" = "OTP",
+  "Outpatient" = "O",
+  "Residential" = "R"
+)
+
+# Ceate new column called program_code
+admissions_data_coded <- admissions_data_factors %>%
+  mutate(program_code = recode(program_category, 
+       "Crisis" = "C",
+       "Inpatient" = "I",
+       "Opioid Treatment Program" = "OTP",
+       "Outpatient" = "O",
+       "Residential" = "R"))
+
+# Create program_category tibble and recode based on the index directly
+program_category_df <- admissions_data_coded %>%
+  distinct(program_category, .keep_all = TRUE) %>%
+  select(program_code, program_category)
+
+program_category_df
+
 ```
 
 ```{r, primary_substance_group}
 # Sairah
+# Define the index for recoding
+primary_substance_group_index <- c(
+  "Alcohol" = "A",
+  "All Others" = "AO",
+  "Cocaine incl Crack" = "CC",
+  "Heroin" = "H",
+  "Marijuana incl Hashish" = "MH",
+  "Other Opioids" = "OO"
+)
+
+# Update admissions_data_coded with new column called substance_code
+admissions_data_coded <- admissions_data_coded %>%
+  mutate(substance_code = recode(primary_substance_group, 
+        "Alcohol" = "A", 
+        "All Others" = "AO",
+        "Cocaine incl Crack" = "CC",
+        "Heroin" = "H",
+        "Marijuana incl Hashish" = "MH",
+        "Other Opioids" = "OO"))
+
+# Create Primary Substance Group tibble and recode based on the index directly
+primary_substance_group_df <- admissions_data_coded %>%
+  distinct(primary_substance_group, .keep_all = TRUE) %>%
+  select(substance_code, primary_substance_group)
+ 
+primary_substance_group_df
+
 ```
 
-```{r, admissions_data}
+````{r, admissions_data}
 # Thomas
+
 ```
 
 #### Define annualAdmissions()
@@ -223,6 +274,7 @@ county
 -   Explain results
 
 ```{r, define_function}
+# Thomas 
 
 ```
 
@@ -233,6 +285,7 @@ county
 -   Explain results
 
 ```{r, admissions_by_county}
+# Sairah
 
 ```
 
@@ -245,5 +298,5 @@ county
 -   Visualize and explain results
 
 ```{r, rehab_regex}
-
+# Caitlin / Thomas / Sairah depending on how it goes
 ```
