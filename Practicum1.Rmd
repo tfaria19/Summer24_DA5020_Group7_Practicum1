@@ -38,6 +38,11 @@ doc_df[, 4]
 ### Question 3
 
 ```{r, q3}
+library(ggplot2)
+head(mtcars)
+
+
+ggplot(mtcars,aes(x=wt, y=mpg, color=factor(cyl))) + geom_point() + labs(x="Weight", y="MPG", title = "Relationship between MPG and Weight")
 
 ```
 
