@@ -2,7 +2,9 @@
 title: "Practicum1"
 author: "Thomas Faria"
 date: "2024-06-05"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -265,7 +267,7 @@ primary_substance_group_df
 
 ```
 
-````{r, admissions_data}
+```{r, admissions_data}
 # Thomas
 
 # Join county_code data onto main tibble using a full_join by county name
@@ -350,8 +352,8 @@ total= sum(admissions_data_df$admissions)
 
 #calculate percentage of admissions in each county 
 percentage_admissions <- admissions_data_df %>% 
-  select(county_codes, admissions) %>%
-  group_by(county_codes) %>% 
+  select(county_code, admissions) %>%
+  group_by(county_code) %>% 
   summarize(percentage=((sum(admissions)/total) * 100))
 
 top_5_admission_counties <- percentage_admissions %>% 
@@ -359,10 +361,9 @@ top_5_admission_counties <- percentage_admissions %>%
 
 print(top_5_admission_counties)
 
-
 library(ggplot2)
 
-
+ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(fill = "blue") + labs(x = "County", y= "Percentage", title = "Top 5 Admission Percentage by Counties") + scale_x_discrete(labels = c("NYC" = "New York City", "QU-NYC" = "Queens", "BR-NYC" = "Bronx", "KI-NYC" = "Kings", "SU" = "Suffolk"))
 
 ```
 
