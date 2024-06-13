@@ -344,6 +344,43 @@ annualAdmissions()
 
 ```{r, admissions_by_county}
 # Sairah
+admissions_data_coded <- admissions_data_factors %>%
+  mutate(program_code = recode(program_category, 
+       "Crisis" = "C",
+       "Inpatient" = "I",
+       "Opioid Treatment Program" = "OTP",
+       "Outpatient" = "O",
+       "Residential" = "R"))
+
+# Create program_category tibble and recode based on the index directly
+program_category_df <- admissions_data_coded %>%
+  distinct(program_category, .keep_all = TRUE) %>%
+  select(program_code, program_category)
+
+program_category_df
+```
+
+```{r, primary_substance_group}
+# Sairah
+
+#total number of admission in the NYS
+total= sum(admissions_data_df$admissions)
+
+#calculate percentage of admissions in each county 
+percentage_admissions <- admissions_data_df %>% 
+  select(county_codes, admissions) %>%
+  group_by(county_codes) %>% 
+  summarize(percentage=((sum(admissions)/total) * 100))
+
+top_5_admission_counties <- percentage_admissions %>% 
+  slice_max(n=5, percentage)
+
+print(top_5_admission_counties)
+
+
+library(ggplot2)
+
+
 
 ```
 
