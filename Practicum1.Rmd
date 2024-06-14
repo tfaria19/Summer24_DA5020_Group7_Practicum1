@@ -325,6 +325,7 @@ annualAdmissions <- function() {
     geom_line() +
     geom_point() +
     scale_x_continuous(breaks = 2007:2017) +
+    scale_y_continuous(limits = c(270000, 320000)) +
     labs(title = "Total admissions per year, all of New York State",
          x = "Total admissions",
          y = "Year") + 
@@ -336,7 +337,7 @@ annualAdmissions <- function() {
     annotate("text",
              x = max_point$year,
              y = max_point$total,
-             label = paste("Max. admissions:", max_point$total),
+             label = paste("Max. admissions:", max_point$total, "in", max_point$year),
              vjust = -1)
 }
 
