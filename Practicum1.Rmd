@@ -140,6 +140,7 @@ program_category_summary <- admissions_data_factors %>%
     mean_admissions = mean(admissions),
     max_admissions = max(admissions)
   ) 
+print(program_category_summary)
 
 service_type_summary <- admissions_data_factors %>% 
   group_by(service_type) %>%
@@ -149,6 +150,8 @@ service_type_summary <- admissions_data_factors %>%
     mean_admissions = mean(admissions),
     max_admissions = max(admissions)
   )
+print(service_type_summary)
+
 age_group_summary <- admissions_data_factors %>% 
   group_by(age_group) %>%
   summarize(
@@ -157,6 +160,8 @@ age_group_summary <- admissions_data_factors %>%
     mean_admissions = mean(admissions),
     max_admissions = max(admissions)
   )
+print(age_group_summary)
+
 primary_substance_group_summary <- admissions_data_factors %>% 
   group_by(primary_substance_group) %>%
   summarize(
@@ -165,6 +170,7 @@ primary_substance_group_summary <- admissions_data_factors %>%
     mean_admissions = mean(admissions),
     max_admissions = max(admissions)
   )
+print(primary_substance_group_summary)
 ```
 
 ```{r}
