@@ -44,7 +44,7 @@ library(ggplot2)
 head(mtcars)
 
 
-ggplot(mtcars,aes(x=wt, y=mpg, color=factor(cyl))) + geom_point() + labs(x="Weight", y="MPG", title = "Relationship between MPG and Weight")
+ggplot(mtcars,aes(x=wt, y=mpg, color=factor(cyl))) + geom_point() + labs(x="Weight", y="MPG", title = "Relationship between MPG and Weight", caption = "This graph looks at the relationship between MPG and weight using cylinders as the color scheme.")
 
 ```
 
@@ -363,7 +363,9 @@ print(top_5_admission_counties)
 
 library(ggplot2)
 
-ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(fill = "blue") + labs(x = "County", y= "Percentage", title = "Top 5 Admission Percentage by Counties") + scale_x_discrete(labels = c("NYC" = "New York City", "QU-NYC" = "Queens", "BR-NYC" = "Bronx", "KI-NYC" = "Kings", "SU" = "Suffolk"))
+ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(fill = "blue") + 
+    labs(x = "County", y= "Percentage (%)", title = "Top 5 Admission Percentage by Counties", caption = "This bar chart shows the top five counties in New York City that had the highest percentage of admissions to the chemical dependence treatment program.") + 
+  scale_x_discrete(labels = c("NYC" = "New York City", "QU-NYC" = "Queens", "BR-NYC" = "Bronx", "KI-NYC" = "Kings", "SU" = "Suffolk"))
 
 ```
 
