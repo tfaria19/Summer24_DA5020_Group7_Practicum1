@@ -20,6 +20,7 @@ library(devtools)
 ### Question 1
 
 ```{r, q1}
+# Define dataframe
 doc_df <- data.frame(
   doctor_type = c("PCP", "Psychiatrist", "Surgeon", "Anesthesia"),
   doctor_lastname = c("Smith", "Dame", "Jones", "Zayas"),
@@ -32,6 +33,7 @@ print(doc_df)
 ### Question 2
 
 ```{r, q2}
+# Index with brackets
 doc_df[1, 2]
 doc_df[2:4, ]
 doc_df[, 4]
@@ -174,15 +176,27 @@ print(primary_substance_group_summary)
 ```
 
 ```{r}
-# Compute outliers for numerical variables
+# Compute outliers for admissions
 admissions_outliers <- admissions_data_factors %>%
   mutate(
     mean_admissions = mean(admissions, na.rm = TRUE),
     sd_admissions = sd(admissions, na.rm = TRUE)
   ) %>%
+  # Relative to the mean, any values on the lower or upper bounds that are 3 times the standard deviation are filtered
   filter(admissions < mean_admissions - 3 * sd_admissions | admissions > mean_admissions + 3 * sd_admissions) %>%
   select(admissions)
 admissions_outliers
+
+# Remove outliers from dataset
+rmv_admissions_outliers <- admissions_data_factors %>%
+  mutate(
+    mean_admissions = mean(admissions, na.rm = TRUE),
+    sd_admissions = sd(admissions, na.rm = TRUE)
+  ) %>%
+  filter(!(admissions < mean_admissions - 3 * sd_admissions | admissions > mean_admissions + 3 * sd_admissions))
+# Note subtracted outliers from new dataframe
+str(admissions_data_factors)
+str(rmv_admissions_outliers$admissions)
 ```
 
 #### Restructure data into appropriate tibbles
@@ -210,6 +224,7 @@ county <- admissions_data_factors %>%
       TRUE ~ county_code 
     )
   )
+# Note: The county "Hamilton" is included in the county_codes csv, but it is not found in the admissions_data dataframe
 county
 ```
 
@@ -385,5 +400,140 @@ ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(
 -   Visualize and explain results
 
 ```{r, rehab_regex}
-# Caitlin / Thomas / Sairah depending on how it goes
+rehab_df <- admissions_data_factors %>%
+  # Only show rehabilitation services
+  filter(str_detect(service_type, regex("Rehab|Rehabilitation", ignore_case = TRUE))) %>%
+  select(service_type, age_group, primary_substance_group, admissions)
+rehab_df
+
+top_substance_df <- rehab_df %>%
+  # Only interested in these combinations
+  group_by(service_type, age_group, primary_substance_group) %>%
+  # Take count to show how many admissions exist for each substance in each age group
+  summarize(substance_count = sum(admissions)) %>%
+  # Limit to age group 
+  group_by(age_group) %>%
+  # Filter for the substances with the highest count
+  filter(substance_count == max(substance_count)) %>%
+  # Show relevant columns
+  select(service_type, age_group, primary_substance_group, substance_count)
+top_substance_df
+```
+
+* To identify the most prominent substance used in each age group, we first define a regular expression in a new dataframe that filters all services containing "Rehab" or "Rehabilitation" in the name
+* A separate dataframe is then defined to find the top substance per age group
+  * The data is grouped by age_group and primary_substance_group because we are only
+  interested in analyses in the context of these variables paired together
+
+```{r}
+ggplot(top_substance_df, aes(primary_substance_group, substance_count, fill = age_group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_x_discrete(
+    name = "Substance",
+    labels = c(
+      "All Others" = "Other",
+      "Cocaine incl Crack" = "Cocaine (Includes Crack)",
+      "Marijuana incl Hashish" = "Marijuana (Includes Hashish)"
+    )
+  ) +
+  scale_fill_discrete(
+    name = "Age Group",
+    labels = c(
+      "18 thru 24" = "18-24",
+      "25 thru 34" = "25-34",
+      "35 thru 44" = "35-44",
+      "45 thru 54" = "45-54",
+      "55 and Older" = "55+",
+      "Under 18" = "Under 18"
+    )
+  ) +
+  labs(
+    y = "Substance Count",
+    title = "Top substances used per age group"
+  ) +
+  theme(
+    axis.title = element_text(face = "bold", color = "black")
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+all_substance_df <- rehab_df %>%
+  group_by(service_type, age_group, primary_substance_group) %>%
+  # Take count to show how many admissions exist for each substance in each age group
+  summarize(substance_count = sum(admissions)) %>%
+  # Limit to age group 
+  group_by(age_group) %>%
+  # Filter for the substances with the highest count
+  mutate(substance_count == max(substance_count)) %>%
+  # Show relevant columns
+  select(service_type, age_group, primary_substance_group, substance_count)
+all_substance_df
+```
+
+```{r all substance}
+ggplot(all_substance_df, aes(age_group, substance_count, fill = primary_substance_group)) +
+  geom_bar(stat = "identity") +
+  labs(
+    x = "Age Group",
+    y = "Number of Admissions",
+    title = "All substances used per age group"
+  ) +
+  scale_fill_discrete(
+    name = "Substance",
+    labels = c(
+      "All Others" = "Other",
+      "Cocaine incl Crack" = "Cocaine (Includes Crack)",
+      "Marijuana incl Hashish" = "Marijuana (Includes Hashish)"
+    )
+  ) +
+  scale_x_discrete(
+    labels = c(
+      "18 thru 24" = "18-24",
+      "25 thru 34" = "25-34",
+      "35 thru 44" = "35-44",
+      "45 thru 54" = "45-54",
+      "55 and Older" = "55+",
+      "Under 18" = "Under 18"
+    )
+  ) +
+  theme(
+    axis.title = element_text(face = "bold", color = "black")
+  ) +
+  theme_minimal()
+```
+
+```{r service}
+ggplot(all_substance_df, aes(age_group, substance_count, fill = service_type)) +
+  geom_bar(stat = "identity") +
+  labs(
+    x = "Age Group",
+    y = "Number of Admissions",
+    title = "Service used per age group"
+  ) +
+  scale_fill_discrete(
+    name = "Service Type",
+    labels = c(
+      "Inpatient Rehabilitation" = "Inpatient",
+      "Outpatient Rehabilitation" = "Outpatient",
+      "Res Rehab for Youth" = "Youth Residential",
+      "Residential Rehabilitation" = "Residential",
+      "Specialized Services OP Rehab" = "Specialized Services OP"
+    )
+  ) +
+  scale_x_discrete(
+    labels = c(
+      "18 thru 24" = "18-24",
+      "25 thru 34" = "25-34",
+      "35 thru 44" = "35-44",
+      "45 thru 54" = "45-54",
+      "55 and Older" = "55+",
+      "Under 18" = "Under 18"
+    )
+  ) +
+  theme(
+    axis.title = element_text(face = "bold", color = "black")
+  ) +
+  theme_minimal()
 ```
