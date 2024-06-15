@@ -393,6 +393,9 @@ ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(
 
 ```
 
+*To find the percentage of admissions in counties, first the total sum of admissions was needed. Then the admissions data dataframe was used and the county code and admission columns were selected. Then grouped by the county code and summarized by calculating the percentage. The percentage admission was used to find the top fix counties using slice_max function and then put into a bar chart 
+* In the bar chart it shows that the counties with the most admissions were the most populated counties in New York. 
+
 #### Extract various "Rehab" facilities information
 
 -   Use a regex to match all facilities that include the word rehab, rehabilitation, etc.
