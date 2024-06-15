@@ -98,292 +98,9 @@ query_results_df <- data.world::query(
 
 #### Initial evaluation of dataset
 
-* The data appears to be right-skewed, with a large amount of low-count admissions (< 100)
-* The mean admissions across all variables is ~45
-* The maximum admissions count for any indication is 2862
-* Zooming in on the lesser-occuring values, we can see that there are very few instances of admissions higher than 1000 - indicating a sharp tail at the higher end. This is likely due to population distributions across the 60+ counties in NY state.
+-   Determine necessary preparation steps and perform them
 
-```{r, q4}
-
-# Evaluate data distribution, outliers, and prepare summary stats
-
-# Reassign query results to more descriptive variable
-admissions_data <- query_results_df
-
-# Overview data
-glimpse(admissions_data)
-summary(admissions_data)
-
-# Visualize outliers in the admissions column
-ggplot(admissions_data) +
-  labs(title = "Admissions Data Distribution") +
-  geom_histogram(mapping = aes(x = admissions), bindwidth = 5) +
-  scale_y_continuous()
-
-# Zoom in on low occuring values
-ggplot(admissions_data) +
-  labs(title = "Admissions Data Distribution (< 8 occurences)") +
-  geom_histogram(mapping = aes(x = admissions), binwidth = 5) +
-  coord_cartesian(ylim = c(0,8))
-
-# Designate all columns except for year, admissions, and county as categorical (using as.factor())
-admissions_data_factors <- admissions_data %>% 
-  mutate(
-    program_category = as.factor(program_category),
-    service_type = as.factor(service_type),
-    age_group = as.factor(age_group),
-    primary_substance_group = as.factor(primary_substance_group)
-  )
-
-# Compute summaries per factor
-program_category_summary <- admissions_data_factors %>% 
-  group_by(program_category) %>%
-  summarize(
-    min_admissions = min(admissions),
-    median_admissions = median(admissions),
-    mean_admissions = mean(admissions),
-    max_admissions = max(admissions)
-  ) 
-print(program_category_summary)
-
-service_type_summary <- admissions_data_factors %>% 
-  group_by(service_type) %>%
-  summarize(
-    min_admissions = min(admissions),
-    median_admissions = median(admissions),
-    mean_admissions = mean(admissions),
-    max_admissions = max(admissions)
-  )
-print(service_type_summary)
-
-age_group_summary <- admissions_data_factors %>% 
-  group_by(age_group) %>%
-  summarize(
-    min_admissions = min(admissions),
-    median_admissions = median(admissions),
-    mean_admissions = mean(admissions),
-    max_admissions = max(admissions)
-  )
-print(age_group_summary)
-
-primary_substance_group_summary <- admissions_data_factors %>% 
-  group_by(primary_substance_group) %>%
-  summarize(
-    min_admissions = min(admissions),
-    median_admissions = median(admissions),
-    mean_admissions = mean(admissions),
-    max_admissions = max(admissions)
-  )
-print(primary_substance_group_summary)
-```
-
-```{r}
-# Compute outliers for admissions
-admissions_outliers <- admissions_data_factors %>%
-  mutate(
-    mean_admissions = mean(admissions, na.rm = TRUE),
-    sd_admissions = sd(admissions, na.rm = TRUE)
-  ) %>%
-  # Relative to the mean, any values on the lower or upper bounds that are 3 times the standard deviation are filtered
-  filter(admissions < mean_admissions - 3 * sd_admissions | admissions > mean_admissions + 3 * sd_admissions) %>%
-  select(admissions)
-admissions_outliers
-
-# Remove outliers from dataset
-rmv_admissions_outliers <- admissions_data_factors %>%
-  mutate(
-    mean_admissions = mean(admissions, na.rm = TRUE),
-    sd_admissions = sd(admissions, na.rm = TRUE)
-  ) %>%
-  filter(!(admissions < mean_admissions - 3 * sd_admissions | admissions > mean_admissions + 3 * sd_admissions))
-# Note subtracted outliers from new dataframe
-str(admissions_data_factors)
-str(rmv_admissions_outliers$admissions)
-```
-
-* It may not be significant that admissions numbers are higher than usual at any given point in time
-* Outliers are presented in one dataframe as being high values 
-
-#### Restructure data into appropriate tibbles
-
-```{r county}
-# Read in .csv created from https://www.dot.ny.gov/main/business-center/engineering/specifications/local-specifications/county-code as reference
-county_codes <- read_csv("county_codes.csv") 
-county_codes
-```
-
-```{r county1}
-county <- admissions_data_factors %>%
-  select(county_of_program_location) %>%
-  distinct() %>%
-  # Join codes with respective counties from county_codes
-  left_join(county_codes, by = "county_of_program_location") %>%
-  mutate(county_code = case_when(
-      # Tagging counties with first two characters and "-NYC"
-      county_of_program_location %in% c("Bronx", "Queens", "Kings") ~ paste(str_to_upper(str_sub(county_of_program_location, 1, 2)), "-NYC", sep = ""),
-      county_of_program_location == "New York" ~ "NYC",
-      # Handle to not treat as NA value, changed code to NS instead
-      county_of_program_location == "Nassau" ~ "NS",
-      # Handle to not treat as NA value, manually assigned SL 
-      county_of_program_location == "St Lawrence" ~ "SL",
-      TRUE ~ county_code 
-    )
-  )
-# Note: The county "Hamilton" is included in the county_codes csv, but it is not found in the admissions_data dataframe
-county
-```
-
-```{r, program_category}
-
-# Define abbreviations for recoding
-program_category_index <- c(
-  "Crisis" = "C",
-  "Inpatient" = "I",
-  "Opioid Treatment Program" = "OTP",
-  "Outpatient" = "O",
-  "Residential" = "R"
-)
-
-# Ceate new column called program_code
-admissions_data_coded <- admissions_data_factors %>%
-  mutate(program_code = recode(program_category, 
-       "Crisis" = "C",
-       "Inpatient" = "I",
-       "Opioid Treatment Program" = "OTP",
-       "Outpatient" = "O",
-       "Residential" = "R"))
-
-# Create program_category tibble and recode based on the index directly
-program_category_df <- admissions_data_coded %>%
-  distinct(program_category, .keep_all = TRUE) %>%
-  select(program_code, program_category)
-
-program_category_df
-
-```
-
-```{r, primary_substance_group}
-# Sairah
-# Define the index for recoding
-primary_substance_group_index <- c(
-  "Alcohol" = "A",
-  "All Others" = "AO",
-  "Cocaine incl Crack" = "CC",
-  "Heroin" = "H",
-  "Marijuana incl Hashish" = "MH",
-  "Other Opioids" = "OO"
-)
-
-# Update admissions_data_coded with new column called substance_code
-admissions_data_coded <- admissions_data_coded %>%
-  mutate(substance_code = recode(primary_substance_group, 
-        "Alcohol" = "A", 
-        "All Others" = "AO",
-        "Cocaine incl Crack" = "CC",
-        "Heroin" = "H",---
-title: "Practicum1"
-author: "Thomas Faria"
-date: "2024-06-05"
-output:
-  html_document: default
-  pdf_document: default
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
-# Load required packages for Practicum1
-library(tidyverse)
-library(devtools)
-```
-
-## Part 1: Questions
-
-### Question 1
-
-```{r, q1}
-# Define dataframe
-doc_df <- data.frame(
-  doctor_type = c("PCP", "Psychiatrist", "Surgeon", "Anesthesia"),
-  doctor_lastname = c("Smith", "Dame", "Jones", "Zayas"),
-  location = c("MA", "ME", "NH", "VT"),
-  AVG_Rating = c("7", "9", "8", "9")
-)
-print(doc_df)
-```
-
-### Question 2
-
-```{r, q2}
-# Index with brackets
-doc_df[1, 2]
-doc_df[2:4, ]
-doc_df[, 4]
-```
-
-### Question 3
-
-```{r, q3}
-library(ggplot2)
-head(mtcars)
-
-
-ggplot(mtcars,aes(x=wt, y=mpg, color=factor(cyl))) + geom_point() + labs(x="Weight", y="MPG", title = "Relationship between MPG and Weight", caption = "This graph looks at the relationship between MPG and weight using cylinders as the color scheme.")
-
-```
-
-### Question 4
-
-```{r}
-# Examine variable summary stats
-summary(mtcars)
-
-mpg_weight_cor <- mtcars %>%
-select(wt, mpg) %>%
-drop_na() %>%
-summarize(correlation = cor(wt, mpg))
-mpg_weight_cor
-```
-
-* It is known that the weight of a vehicle plays a key role in how fuel efficient it is, so both wt and mpg were selected to identify a potential correlation
-* The Pearson coefficient is a descriptive statistic that reveals the linear correlation between two variables
-* A value between 0 and 1 shows how strong the correlation is, with 1 indicating a strong correlation and 0 an absence of correlation
-* The sign of the value indicates the type of correlation (positive or negative)
-* In this case, the coefficient value returned is approximately -0.87, which indicates a strong, negative correlation
-  * As vehicle weight increases, fuel efficiency (mpg) decreases
-
----
-
-## Part 2: Practicum Tasks
-
-#### Load data from provided URL
-
-```{r, load_data}
-
-# Documentation from data.world recommends package installation directly from Github
-devtools::install_github("datadotworld/data.world-r", build_vignettes = TRUE)
-
-# Load the requisite API token obtained from data.world advanced settings (Thomas's account)
-# Original code: token <- readLines('~/RStudioProjects/Summer24_DA5020_Group7_Practicum1/API_token')
-# Changed
-token <- readLines('API_token')
-saved_cfg <- data.world::save_config(token)
-data.world::set_config(saved_cfg)
-
-# From data.world R and RStudio integration:
-library("data.world")
-sql_stmt <- data.world::qry_sql("SELECT * FROM chemical_dependence_treatment_program_admissions_beginning_2007_1")
-query_results_df <- data.world::query(
-  sql_stmt, "https://data.world/data-ny-gov/ngbt-9rwf")
-
-```
-
-#### Initial evaluation of dataset
-
-* The data appears to be right-skewed, with a large amount of low-count admissions (< 100)
-* The mean admissions across all variables is ~45
-* The maximum admissions count for any indication is 2862
-* Zooming in on the lesser-occuring values, we can see that there are very few instances of admissions higher than 1000 - indicating a sharp tail at the higher end. This is likely due to population distributions across the 60+ counties in NY state.
+-   Discuss distribution, outliers, and prepare summary stats
 
 ```{r, q4}
 
@@ -604,7 +321,7 @@ admissions_data_df <- admissions_data_coded_joined %>%
 -   Explain results
 
 ```{r, define_function}
-# Thomas
+# Thomas -- NEEDS WORK
 
 # This function uses aggregate() to sum the total admissions for every year in the admissions_data_df
 # The max point is computed from the aggregated tibble and held for later reference on the graph
@@ -628,9 +345,8 @@ annualAdmissions <- function() {
     scale_x_continuous(breaks = 2007:2017) +
     scale_y_continuous(limits = c(270000, 320000)) +
     labs(title = "Total admissions per year, all of New York State",
-         x = "Year",
-         y = "Total Admissions",
-         caption = "Admissions aggregated by year and maximum year identified") + 
+         x = "Total admissions",
+         y = "Year") + 
     theme(
       plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
       axis.title.x = element_text(size = 14),
@@ -673,11 +389,10 @@ print(top_5_admission_counties)
 library(ggplot2)
 
 ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(fill = "blue") + 
-    labs(x = "County", y= "Percentage (%)", title = "Top 5 Admission Percentage by Counties", caption = "This bar chart shows the top five counties in New York City that had the highest percentage \n of admissions to the chemical dependence treatment program.") + 
+    labs(x = "County", y= "Percentage (%)", title = "Top 5 Admission Percentage by Counties", caption = "This bar chart shows the top five counties in New York City that had the highest percentage of admissions to the chemical dependence treatment program.") + 
   scale_x_discrete(labels = c("NYC" = "New York City", "QU-NYC" = "Queens", "BR-NYC" = "Bronx", "KI-NYC" = "Kings", "SU" = "Suffolk"))
 
 ```
-
 *To find the percentage of admissions in counties, first the total sum of admissions was needed. Then the admissions data dataframe was used and the county code and admission columns were selected. Then grouped by the county code and summarized by calculating the percentage. The percentage admission was used to find the top fix counties using slice_max function and then put into a bar chart 
 * In the bar chart it shows that the counties with the most admissions were the most populated counties in New York. 
 
