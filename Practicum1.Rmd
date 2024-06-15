@@ -3,8 +3,8 @@ title: "Practicum1"
 author: "Thomas Faria"
 date: "2024-06-05"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -396,7 +396,7 @@ print(top_5_admission_counties)
 library(ggplot2)
 
 ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(fill = "blue") + 
-    labs(x = "County", y= "Percentage (%)", title = "Top 5 Admission Percentage by Counties", caption = "This bar chart shows the top five counties in New York City that had the highest percentage of admissions to the chemical dependence treatment program.") + 
+    labs(x = "County", y= "Percentage (%)", title = "Top 5 Admission Percentage by Counties", caption = "This bar chart shows the top five counties in New York City that \nhad the highest percentage of admissions to the chemical dependence treatment program.") + 
   scale_x_discrete(labels = c("NYC" = "New York City", "QU-NYC" = "Queens", "BR-NYC" = "Bronx", "KI-NYC" = "Kings", "SU" = "Suffolk"))
 
 ```
