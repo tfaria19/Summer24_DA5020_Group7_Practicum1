@@ -98,9 +98,10 @@ query_results_df <- data.world::query(
 
 #### Initial evaluation of dataset
 
--   Determine necessary preparation steps and perform them
-
--   Discuss distribution, outliers, and prepare summary stats
+* The data appears to be right-skewed, with a large amount of low-count admissions (< 100)
+* The mean admissions across all variables is ~45
+* The maximum admissions count for any indication is 2862
+* Zooming in on the lesser-occuring values, we can see that there are very few instances of admissions higher than 1000 - indicating a sharp tail at the higher end. This is likely due to population distributions across the 60+ counties in NY state.
 
 ```{r, q4}
 
@@ -318,7 +319,7 @@ admissions_data_df <- admissions_data_coded_joined %>%
 -   Explain results
 
 ```{r, define_function}
-# Thomas -- NEEDS WORK
+# Thomas
 
 # This function uses aggregate() to sum the total admissions for every year in the admissions_data_df
 # The max point is computed from the aggregated tibble and held for later reference on the graph
@@ -342,8 +343,9 @@ annualAdmissions <- function() {
     scale_x_continuous(breaks = 2007:2017) +
     scale_y_continuous(limits = c(270000, 320000)) +
     labs(title = "Total admissions per year, all of New York State",
-         x = "Total admissions",
-         y = "Year") + 
+         x = "Year",
+         y = "Total Admissions",
+         caption = "Admissions aggregated by year and maximum year identified") + 
     theme(
       plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
       axis.title.x = element_text(size = 14),
@@ -390,8 +392,6 @@ ggplot(top_5_admission_counties, aes(x=county_code, y = percentage)) + geom_col(
   scale_x_discrete(labels = c("NYC" = "New York City", "QU-NYC" = "Queens", "BR-NYC" = "Bronx", "KI-NYC" = "Kings", "SU" = "Suffolk"))
 
 ```
-*To find the percentage of admissions in counties, first the total sum of admissions was needed. Then the admissions data dataframe was used and the county code and admission columns were selected. Then grouped by the county code and summarized by calculating the percentage. The percentage admission was used to find the top fix counties using slice_max function and then put into a bar chart 
-* In the bar chart it shows that the counties with the most admissions were the most populated counties in New York. 
 
 #### Extract various "Rehab" facilities information
 
