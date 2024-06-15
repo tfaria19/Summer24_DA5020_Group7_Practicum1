@@ -116,12 +116,19 @@ summary(admissions_data)
 # Visualize outliers in the admissions column
 ggplot(admissions_data) +
   labs(title = "Admissions Data Distribution") +
-  geom_histogram(mapping = aes(x = admissions), bindwidth = 5)
+  geom_histogram(mapping = aes(x = admissions), bindwidth = 5) + 
+  labs(title = "Distribution of Admissions Values",
+       x = "Admissions",
+       y = "Count",
+       caption = "A histogram showing the distribution of numerical admissions data")
 
 # Zoom in on low occuring values
 ggplot(admissions_data) +
-  labs(title = "Admissions Data Distribution (< 8 occurences)") +
   geom_histogram(mapping = aes(x = admissions), binwidth = 5) +
+  labs(title = "Distribution of Admissions Values (< 8 occurences)",
+       x = "Admissions",
+       y = "Count",
+       caption = "Instances of less-occuring admissions values") +
   coord_cartesian(ylim = c(0,8))
 
 # Designate all columns except for year, admissions, and county as categorical (using as.factor())
